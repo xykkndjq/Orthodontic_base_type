@@ -11,30 +11,50 @@ using std::vector;
 // Orthodontics library
 namespace orth
 {
+	//基础数据类型
 	typedef Point3f Vectorf;
 	typedef Point3d Vectord;
 	typedef Point3d Normal;
-	typedef Point3ui face;
-	typedef Point3uc color;
-	typedef double curvature;
-	typedef short label;
+	typedef Point3ui Face;
+	typedef Point3uc Color;
+	typedef double Curvature;
+	typedef short Label;
+	typedef long Index_l;
+	typedef unsigned int Index_ui;
+	typedef vector<Index_ui> Point2Edge;
 
+	struct HalfEdge_Parallel
+	{
+		Index_ui CurrentPoint;
+		Index_ui EndPoint;
+		Index_ui OppoEdge;
+		Index_ui CurrentFace;
+		Index_ui NextEdge;
+		bool SearchLabel;
+	};
 
+	struct HalfEdge_Serial
+	{
+		Vectord* CurrentPoint;
+		Vectord* EndPoint;
+		HalfEdge_Serial* OppoEdge;
+		Face* CurrentFace;
+		HalfEdge_Serial* NextEdge;
+		bool SearchLabel;
+	};
+
+	//基础图形类型
 	typedef vector<Vectord> PointCloudD;
 	typedef vector<Vectorf> PointCloudF;
 	typedef vector<Normal> PointNormal;
-	typedef vector<color> PointColor;
-	typedef vector<face> Faces;
+	typedef vector<Color> PointColor;
+	typedef vector<Face> Faces;
 	typedef vector<Normal> FacesNormal;
-	typedef vector<label> PointLabel;
-	typedef vector<curvature> PointCurs;
-
-#define ACROSS 0
-#define COPLANE 1
-#define AEDGE 2
-#define AVERTEX 3
-#define NONINTERSECT 4
-
+	typedef vector<Label> PointLabel;
+	typedef vector<Curvature> PointCurs;
+	typedef vector<HalfEdge_Parallel> HalfEdgeCloud_P;
+	typedef vector<HalfEdge_Serial> HalfEdgeCloud_S;
+	typedef vector<Point2Edge> HalfPointCloud_P;
 
 	struct Box {
 		Vectorf u_0;
@@ -54,8 +74,15 @@ namespace orth
 		double C;
 		double D;
 
-		Point3d center;
+		Point3d Center;
 	};
+
+#define ACROSS 0
+#define COPLANE 1
+#define AEDGE 2
+#define AVERTEX 3
+#define NONINTERSECT 4
+
 
 	//class H_type
 	//{
@@ -94,8 +121,11 @@ namespace orth
 
 	//};
 
+	//***************************************//
+	//			      基础计算               //
+	//**************************************//
 
-
+	//三角形法相计算
 	inline Normal TriangleNormal(Point3d &point_a, Point3d &point_b, Point3d &point_c)
 	{
 		return ((point_b - point_a).cross(point_c - point_a));
@@ -253,6 +283,9 @@ namespace orth
 		PointCurs Cur;
 		PointLabel Selected;
 
+		HalfEdgeCloud_P Edge_P;
+		HalfEdgeCloud_S Edge_S;
+		HalfPointCloud_P P2Edge;
 
 		Point3d original_center;
 		double* original_rt;
@@ -273,7 +306,9 @@ namespace orth
 
 		void PointRot(double *rt_matrix, Point3f *point);
 
-		void NormalUpdate();
+		bool NormalUpdate();
+		
+		bool EdgeUpdate(const bool PSTypeChoes);
 
 
 	private:
@@ -281,6 +316,271 @@ namespace orth
 
 
 	};
+
+	//最邻近点查询
+	bool NearestPointSearch(orth::MeshModel *mm_target, orth::MeshModel *mm_query, const int Qctree_depth, vector<unsigned int> &query_index, vector<double> &nearest_distance)
+	{
+		if (mm_query->P.size() == 0)
+		{
+			return false;
+		}
+
+		//求外接矩形
+		double x_min = 1000, x_max = -1000, y_min = 1000, y_max = -1000, z_min = 1000, z_max = -1000;
+		for (size_t point_index = 0; point_index < mm_target->P.size(); point_index++)
+		{
+			double x = mm_target->P[point_index].x;
+			double y = mm_target->P[point_index].y;
+			double z = mm_target->P[point_index].z;
+			if (x<x_min)
+			{
+				x_min = x;
+			}
+			if (x>x_max)
+			{
+				x_max = x;
+			}
+			if (y<y_min)
+			{
+				y_min = y;
+			}
+			if (y>y_max)
+			{
+				y_max = y;
+			}
+			if (z<z_min)
+			{
+				z_min = z;
+			}
+			if (z>z_max)
+			{
+				z_max = z;
+			}
+		}
+
+		//cout << " x_min = " << x_min << " y_min = " << y_min << " z_min = " << z_min << " x_max = " << x_max << " y_max = " << y_max << " z_max = " << z_max << endl;
+
+		x_min -= 5; y_min -= 5; z_min -= 5;
+		x_max += 5; y_max += 5; z_max += 5;
+
+		double size = (pow(2, Qctree_depth));
+
+		//求目标点云的key
+		vector<unsigned __int32> target_key(mm_target->P.size());
+
+		for (size_t points_index = 0; points_index < mm_target->P.size(); points_index++)
+		{
+			unsigned __int32 key = 0;
+
+			//for (size_t tree_depth = 1; tree_depth <= Qctree_depth; ++tree_depth)
+			//{
+			//	double size = (pow(2, tree_depth - 1));
+			//	double cell_size_x = (x_max - x_min) / (size);
+			//	double cell_size_y = (y_max - y_min) / (size);
+			//	double cell_size_z = (z_max - z_min) / (size);
+
+			//	double x = mm_target->P[points_index].x - x_min;
+			//	double y = mm_target->P[points_index].y - y_min;
+			//	double z = mm_target->P[points_index].z - z_min;
+
+			//double temp_x = x/cell_size_x;
+			//double temp_y = y/cell_size_y;
+			//double temp_z = z/cell_size_z;
+
+			//double temp2_x = temp_x - floor(temp_x);
+			//double temp2_y = temp_y - floor(temp_y);
+			//double temp2_z = temp_z - floor(temp_z);
+
+			//if (temp2_x>=0.5)
+			//{
+			//	key += 4;
+			//}
+			//if (temp2_y >= 0.5)
+			//{
+			//	key += 2;
+			//}
+			//if (temp2_z >= 0.5)
+			//{
+			//	key += 1;
+			//}
+
+			//cout << std::bitset<32>(key)  << endl;
+
+			//if (tree_depth!= Qctree_depth)
+			//{
+			//	key = key << 3;
+			//}
+
+			//}
+
+
+			double cell_size_x = (x_max - x_min) / (size);
+			double cell_size_y = (y_max - y_min) / (size);
+			double cell_size_z = (z_max - z_min) / (size);
+
+			double x = mm_target->P[points_index].x - x_min;
+			double y = mm_target->P[points_index].y - y_min;
+			double z = mm_target->P[points_index].z - z_min;
+
+			unsigned __int32 temp_x = floor(x / cell_size_x);
+			unsigned __int32 temp_y = floor(y / cell_size_y);
+			unsigned __int32 temp_z = floor(z / cell_size_z);
+
+			key = temp_x * (int)size*(int)size + temp_y * (int)size + temp_z;
+
+			target_key[points_index] = key;
+		}
+
+		//按照node来统计点
+		vector<vector<unsigned __int32>> target_key_sort(size*size*size);
+		for (size_t points_index = 0; points_index < mm_target->P.size(); points_index++)
+		{
+			target_key_sort[target_key[points_index]].push_back(points_index);
+		}
+
+		//求查询点云的key
+		vector<unsigned int> Qctree_key(mm_query->P.size());
+
+		for (size_t points_index = 0; points_index < mm_query->P.size(); points_index++)
+		{
+			unsigned __int32 key = 0;
+
+			//for (size_t tree_depth = 1; tree_depth <= Qctree_depth; ++tree_depth)
+			//{
+			//	double size = (pow(2, tree_depth - 1));
+			//	double cell_size_x = (x_max - x_min) / (size);
+			//	double cell_size_y = (y_max - y_min) / (size);
+			//	double cell_size_z = (z_max - z_min) / (size);
+
+			//	double x = mm_query->P[points_index].x - x_min;
+			//	double y = mm_query->P[points_index].y - y_min;
+			//	double z = mm_query->P[points_index].z - z_min;
+
+			//	double temp_x = x / cell_size_x;
+			//	double temp_y = y / cell_size_y;
+			//	double temp_z = z / cell_size_z;
+
+			//	double temp2_x = temp_x - floor(temp_x);
+			//	double temp2_y = temp_y - floor(temp_y);
+			//	double temp2_z = temp_z - floor(temp_z);
+
+			//	if (temp2_x >= 0.5)
+			//	{
+			//		key += 4;
+			//	}
+			//	if (temp2_y >= 0.5)
+			//	{
+			//		key += 2;
+			//	}
+			//	if (temp2_z >= 0.5)
+			//	{
+			//		key += 1;
+			//	}
+
+			//	cout << std::bitset<32>(key) << endl;
+
+			//	if (tree_depth != Qctree_depth)
+			//	{
+			//		key = key << 3;
+			//	}
+
+			//}
+
+			if (mm_query->P[points_index].x<x_min || mm_query->P[points_index].x>x_max || mm_query->P[points_index].y<y_min || mm_query->P[points_index].y>y_max || mm_query->P[points_index].z<z_min || mm_query->P[points_index].z>z_max)
+			{
+				nearest_distance[points_index] = -1;
+				continue;
+			}
+
+			double cell_size_x = (x_max - x_min) / (size);
+			double cell_size_y = (y_max - y_min) / (size);
+			double cell_size_z = (z_max - z_min) / (size);
+
+			double x = mm_query->P[points_index].x - x_min;
+			double y = mm_query->P[points_index].y - y_min;
+			double z = mm_query->P[points_index].z - z_min;
+
+
+
+			unsigned __int32 temp_x = floor(x / cell_size_x);
+			unsigned __int32 temp_y = floor(y / cell_size_y);
+			unsigned __int32 temp_z = floor(z / cell_size_z);
+
+			key = temp_x * (int)size*(int)size + temp_y * (int)size + temp_z;
+
+			Qctree_key[points_index] = key;
+		}
+
+		//求查询点云的最近点
+		query_index.resize(mm_query->P.size());
+		nearest_distance.resize(mm_query->P.size());
+		for (size_t points_index = 0; points_index < mm_query->P.size(); points_index++)
+		{
+			if (nearest_distance[points_index] == -1)
+			{
+				continue;
+			}
+
+			orth::Point3d query_point = mm_query->P[points_index];
+			vector<unsigned __int32> searched_points;
+			int break_label = 2;
+
+			double cell_size_x = (x_max - x_min) / (size);
+			double cell_size_y = (y_max - y_min) / (size);
+			double cell_size_z = (z_max - z_min) / (size);
+
+			double x = mm_query->P[points_index].x - x_min;
+			double y = mm_query->P[points_index].y - y_min;
+			double z = mm_query->P[points_index].z - z_min;
+
+			unsigned __int32 temp_x = floor(x / cell_size_x);
+			unsigned __int32 temp_y = floor(y / cell_size_y);
+			unsigned __int32 temp_z = floor(z / cell_size_z);
+
+			for (size_t cycle_index = 0; cycle_index < Qctree_depth - 1; ++cycle_index)
+			{
+				if (searched_points.size()>0)
+				{
+					break_label--;
+				}
+				if (!break_label)
+				{
+					break;
+				}
+				for (size_t x_index = temp_x - cycle_index; x_index <= temp_x + cycle_index; ++x_index)
+				{
+					for (size_t y_index = temp_y - cycle_index; y_index <= temp_y + cycle_index; ++y_index)
+					{
+
+						for (size_t z_index = temp_z - cycle_index; z_index <= temp_z + cycle_index; ++z_index)
+						{
+							if (target_key_sort[x_index * (int)size*(int)size + y_index * (int)size + z_index].size()>0)
+							{
+
+								for (size_t point_index = 0; point_index < target_key_sort[x_index * (int)size*(int)size + y_index * (int)size + z_index].size(); point_index++)
+								{
+									searched_points.push_back(target_key_sort[x_index * (int)size*(int)size + y_index * (int)size + z_index][point_index]);
+								}
+
+							}
+						}
+					}
+				}
+
+			}
+
+			nearest_distance[points_index] = 100;
+			for (size_t search_index = 0; search_index < searched_points.size(); search_index++)
+			{
+				double dis = orth::Point2PointDistance(query_point, mm_target->P[searched_points[search_index]]);
+				if (dis<nearest_distance[points_index])
+				{
+					query_index[points_index] = searched_points[search_index];
+					nearest_distance[points_index] = dis;
+				}
+			}
+		}
+	}
 
 
 

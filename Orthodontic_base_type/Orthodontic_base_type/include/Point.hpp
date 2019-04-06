@@ -6,17 +6,12 @@
 
 /** @brief Template class for 3D points specified by its coordinates `x`, `y` and `z`.
 
-An instance of the class is interchangeable with the C structure CvPoint2D32f . Similarly to
-Point_ , the coordinates of 3D points can be converted to another type. The vector arithmetic and
-comparison operations are also supported.
-
 The following Point3_\<\> aliases are available:
 @code
     typedef Point3_<int> Point3i;
     typedef Point3_<float> Point3f;
     typedef Point3_<double> Point3d;
 @endcode
-@see cv::Point3i, cv::Point3f and cv::Point3d
 */
 
 namespace orth
