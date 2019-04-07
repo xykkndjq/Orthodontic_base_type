@@ -72,7 +72,7 @@ namespace orth
 			N[F[i].y] += FN[i]; point_face_number[F[i].y]++;
 			N[F[i].z] += FN[i]; point_face_number[F[i].z]++;
 		}
-		for (unsigned int i = 0; i <P.size(); i++)
+		for (unsigned int i = 0; i < P.size(); i++)
 		{
 			N[i] /= (float)point_face_number[i];
 
@@ -81,12 +81,12 @@ namespace orth
 			N[i] /= e;
 		}
 
-
+		return true;
 	}
 
 	bool MeshModel::EdgeUpdate(const bool PSTypeChoes)
 	{
-		if (P.size()==0)
+		if (P.size() == 0)
 		{
 			return false;
 		}
@@ -108,9 +108,9 @@ namespace orth
 				for (size_t point_ = 0; point_ < 3; point_++)
 				{
 					Edge_P[face_index * 3 + point_].CurrentPoint = point_index[point_];
-					Edge_P[face_index * 3 + point_].EndPoint = point_index[point_+1];
+					Edge_P[face_index * 3 + point_].EndPoint = point_index[point_ + 1];
 					Edge_P[face_index * 3 + point_].CurrentFace = face_index;
-					if (point_==3)
+					if (point_ == 3)
 					{
 						Edge_P[face_index * 3 + point_].NextEdge = face_index * 3;
 
@@ -196,6 +196,92 @@ namespace orth
 
 	}
 
+	bool MeshModel::ModelSplit(vector<orth::MeshModel> &models)
+	{
+		if (P2Edge.size() == 0)
+		{
+			EdgeUpdate(1);
+		}
+
+		L.resize(P.size(), -1);
+
+		Index_ui label_index = 0;
+		Index_ui candidate_scan_index = 0;
+		vector<Index_ui> candidate_points_index;
+
+		//从第一个面开始扫描，逐个对点进行标记
+		for (size_t face_index = 0; face_index < F.size(); face_index++)
+		{
+			if (L[F[face_index].x] == -1)
+			{
+				candidate_points_index.push_back(F[face_index].x); L[F[face_index].x] = label_index; //std::cout << candidate_points_index[candidate_points_index.size()-1] << std::endl;
+			}
+			else
+			{
+				continue;
+			}
+
+
+			while (true)
+			{
+				if (candidate_points_index.size() == candidate_scan_index)
+				{
+					candidate_points_index.clear();
+					candidate_scan_index = 0;
+					label_index++;
+					break;
+				}
+
+				L[candidate_points_index[candidate_scan_index]] = label_index;
+
+				//逐个加入候选点
+				for (size_t p2e_index = 0; p2e_index < P2Edge[candidate_points_index[candidate_scan_index]].size(); p2e_index++)
+				{
+					if (L[Edge_P[P2Edge[candidate_points_index[candidate_scan_index]][p2e_index]].EndPoint] == -1)
+					{
+						candidate_points_index.push_back(Edge_P[P2Edge[candidate_points_index[candidate_scan_index]][p2e_index]].EndPoint); L[Edge_P[P2Edge[candidate_points_index[candidate_scan_index]][p2e_index]].EndPoint] = label_index; //std::cout << candidate_points_index[candidate_points_index.size() - 1] << std::endl;
+					}
+				}
+
+				//std::cout <<"									"<< candidate_scan_index << std::endl;
+				candidate_scan_index++;
+
+			}
+
+		}
+
+
+		//将标记点按照索引分解成单独模型
+		models.resize(label_index);
+		vector<Index_ui> new_point_index(P.size());
+		for (size_t point_index = 0; point_index < P.size(); point_index++)
+		{
+			if (L[point_index]<0 || L[point_index] >= label_index)
+			{
+				continue;
+			}
+			models[L[point_index]].P.push_back(P[point_index]);
+			models[L[point_index]].N.push_back(N[point_index]);
+			models[L[point_index]].C.push_back(C[point_index]);
+			models[L[point_index]].L.push_back(L[point_index]);
+			//models[L[point_index]].Cur.push_back(Cur[point_index]);
+			new_point_index[point_index] = (models[L[point_index]].P.size() - 1);
+		}
+		for (size_t face_index = 0; face_index < F.size(); face_index++)
+		{
+
+			Index_ui l_point1 = F[face_index].x;
+			Index_ui l_point2 = F[face_index].y;
+			Index_ui l_point3 = F[face_index].z;
+			Label l_label = L[l_point1];
+			orth::Face l_face(new_point_index[l_point1], new_point_index[l_point2], new_point_index[l_point3]);
+			models[l_label].F.push_back(l_face);
+			models[l_label].FN.push_back(FN[face_index]);
+		}
+
+		return true;
+
+	}
 
 	//void MeshModel::DateDownload(Eigen::MatrixXd &Verts, Eigen::MatrixXi &Faces)
 	//{
@@ -284,28 +370,28 @@ namespace orth
 
 		//旋转尖点
 
-		if (cusp.size()>0)
+		if (cusp.size() > 0)
 		{
 			for (int cusp_index = 0; cusp_index < cusp.size(); cusp_index++)
 			{
 				PointRot(rt_matrix, &cusp[cusp_index]);
 			}
 		}
-		if (cusp_b.size()>0)
+		if (cusp_b.size() > 0)
 		{
 			for (int cusp_index = 0; cusp_index < cusp_b.size(); cusp_index++)
 			{
 				PointRot(rt_matrix, &cusp_b[cusp_index]);
 			}
 		}
-		if (cusp_l.size()>0)
+		if (cusp_l.size() > 0)
 		{
 			for (int cusp_index = 0; cusp_index < cusp_b.size(); cusp_index++)
 			{
 				PointRot(rt_matrix, &cusp_l[cusp_index]);
 			}
 		}
-		if (incisal_edges.size()>0)
+		if (incisal_edges.size() > 0)
 		{
 			for (int cusp_index = 0; cusp_index < incisal_edges.size(); cusp_index++)
 			{

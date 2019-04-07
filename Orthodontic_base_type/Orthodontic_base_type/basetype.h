@@ -143,8 +143,8 @@ namespace orth
 	inline double Point2PlaneDistance(Point3d &point, Plane &target_plane)
 	{
 		double a = target_plane.A, b = target_plane.B, c = target_plane.C, d = target_plane.D;
-		double pqdot = a*point.x + b*point.y + c*point.z + d;
-		double n = sqrt(a*a + b*b + c*c);
+		double pqdot = a * point.x + b * point.y + c * point.z + d;
+		double n = sqrt(a*a + b * b + c * c);
 		return pqdot / n;
 	}
 
@@ -154,9 +154,9 @@ namespace orth
 		Point3d ab = point_b - point_a;
 		Point3d ac = point_c - point_a;
 		Point3d normal_vector = ab.cross(ac);
-		double a = normal_vector.x, b = normal_vector.y, c = normal_vector.z; double d = -a*point_a.x - b*point_a.y - c*point_a.z;
-		double pqdot = a*point.x + b*point.y + c*point.z + d;
-		double n = sqrt(a*a + b*b + c*c);
+		double a = normal_vector.x, b = normal_vector.y, c = normal_vector.z; double d = -a * point_a.x - b * point_a.y - c * point_a.z;
+		double pqdot = a * point.x + b * point.y + c * point.z + d;
+		double n = sqrt(a*a + b * b + c * c);
 		return pqdot / n;
 	}
 
@@ -223,7 +223,7 @@ namespace orth
 		{
 			double dis1 = Point2PlaneDistance(a1, a2, b2, c2);
 			double dis2 = Point2PlaneDistance(b1, a2, b2, c2);
-			if (dis1*dis2<0)
+			if (dis1*dis2 < 0)
 			{
 				return true;
 			}
@@ -237,7 +237,7 @@ namespace orth
 		{
 			double dis1 = Point2PlaneDistance(a1, a2, b2, c2);
 			double dis2 = Point2PlaneDistance(c1, a2, b2, c2);
-			if (dis1*dis2<0)
+			if (dis1*dis2 < 0)
 			{
 				return true;
 			}
@@ -250,7 +250,7 @@ namespace orth
 		{
 			double dis1 = Point2PlaneDistance(b1, a2, b2, c2);
 			double dis2 = Point2PlaneDistance(c1, a2, b2, c2);
-			if (dis1*dis2<0)
+			if (dis1*dis2 < 0)
 			{
 				return true;
 			}
@@ -307,10 +307,10 @@ namespace orth
 		void PointRot(double *rt_matrix, Point3f *point);
 
 		bool NormalUpdate();
-		
+
 		bool EdgeUpdate(const bool PSTypeChoes);
 
-
+		bool ModelSplit(vector<orth::MeshModel> &models);
 	private:
 		int size_ = 0;
 
@@ -318,12 +318,14 @@ namespace orth
 	};
 
 	//最邻近点查询
-	bool NearestPointSearch(orth::MeshModel *mm_target, orth::MeshModel *mm_query, const int Qctree_depth, vector<unsigned int> &query_index, vector<double> &nearest_distance)
+	inline bool NearestPointSearch(orth::MeshModel *mm_target, orth::MeshModel *mm_query, const int Qctree_depth, vector<unsigned int> &query_index, vector<double> &nearest_distance)
 	{
 		if (mm_query->P.size() == 0)
 		{
 			return false;
 		}
+		query_index.resize(mm_query->P.size());
+		nearest_distance.resize(mm_query->P.size());
 
 		//求外接矩形
 		double x_min = 1000, x_max = -1000, y_min = 1000, y_max = -1000, z_min = 1000, z_max = -1000;
@@ -332,27 +334,27 @@ namespace orth
 			double x = mm_target->P[point_index].x;
 			double y = mm_target->P[point_index].y;
 			double z = mm_target->P[point_index].z;
-			if (x<x_min)
+			if (x < x_min)
 			{
 				x_min = x;
 			}
-			if (x>x_max)
+			if (x > x_max)
 			{
 				x_max = x;
 			}
-			if (y<y_min)
+			if (y < y_min)
 			{
 				y_min = y;
 			}
-			if (y>y_max)
+			if (y > y_max)
 			{
 				y_max = y;
 			}
-			if (z<z_min)
+			if (z < z_min)
 			{
 				z_min = z;
 			}
-			if (z>z_max)
+			if (z > z_max)
 			{
 				z_max = z;
 			}
@@ -512,8 +514,7 @@ namespace orth
 		}
 
 		//求查询点云的最近点
-		query_index.resize(mm_query->P.size());
-		nearest_distance.resize(mm_query->P.size());
+
 		for (size_t points_index = 0; points_index < mm_query->P.size(); points_index++)
 		{
 			if (nearest_distance[points_index] == -1)
@@ -539,7 +540,7 @@ namespace orth
 
 			for (size_t cycle_index = 0; cycle_index < Qctree_depth - 1; ++cycle_index)
 			{
-				if (searched_points.size()>0)
+				if (searched_points.size() > 0)
 				{
 					break_label--;
 				}
@@ -554,7 +555,7 @@ namespace orth
 
 						for (size_t z_index = temp_z - cycle_index; z_index <= temp_z + cycle_index; ++z_index)
 						{
-							if (target_key_sort[x_index * (int)size*(int)size + y_index * (int)size + z_index].size()>0)
+							if (target_key_sort[x_index * (int)size*(int)size + y_index * (int)size + z_index].size() > 0)
 							{
 
 								for (size_t point_index = 0; point_index < target_key_sort[x_index * (int)size*(int)size + y_index * (int)size + z_index].size(); point_index++)
@@ -573,13 +574,15 @@ namespace orth
 			for (size_t search_index = 0; search_index < searched_points.size(); search_index++)
 			{
 				double dis = orth::Point2PointDistance(query_point, mm_target->P[searched_points[search_index]]);
-				if (dis<nearest_distance[points_index])
+				if (dis < nearest_distance[points_index])
 				{
 					query_index[points_index] = searched_points[search_index];
 					nearest_distance[points_index] = dis;
 				}
 			}
 		}
+
+		return true;
 	}
 
 
