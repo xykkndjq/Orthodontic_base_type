@@ -283,6 +283,15 @@ namespace orth
 
 	}
 
+	void MeshModel::ModelSample(const int rate)
+	{
+		int jump_number = (int)(P.size() / rate);
+		for (int point_index = 0; point_index < P.size(); point_index += jump_number)
+		{
+			S.push_back(point_index);
+		}
+	}
+
 	//void MeshModel::DateDownload(Eigen::MatrixXd &Verts, Eigen::MatrixXi &Faces)
 	//{
 	//	if (P.size()==0)

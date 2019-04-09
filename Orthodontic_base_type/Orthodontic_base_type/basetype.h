@@ -319,9 +319,15 @@ namespace orth
 
 		bool NormalUpdate();
 
-		bool EdgeUpdate(const bool PSTypeChoes);
+		///PSTypeChoes : 计算类型串行或并行
+		bool EdgeUpdate(const bool PSTypeChoes = 1);
 
+		///模型分割函数，对当前模型进行分解，不连续的mesh被分为独立的个体并用Label进行标记
 		bool ModelSplit(vector<orth::MeshModel> &models);
+
+		///计算采样点
+		///rate : 采样率，最终采样后剩余数量
+		void ModelSample(const int rate);
 	private:
 		int size_ = 0;
 
