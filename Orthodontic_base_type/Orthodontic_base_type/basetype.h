@@ -11,7 +11,10 @@ using std::vector;
 // Orthodontics library
 namespace orth
 {
-	//基础数据类型
+	//***************************************//
+	//			    基础数据类型              //
+	//***************************************//
+
 	typedef Point3f Vectorf;
 	typedef Point3d Vectord;
 	typedef Point3d Normal;
@@ -51,11 +54,13 @@ namespace orth
 	typedef vector<Face> Faces;
 	typedef vector<Normal> FacesNormal;
 	typedef vector<Label> PointLabel;
+	typedef vector<Index_ui> SamplePoints;
 	typedef vector<Curvature> PointCurs;
 	typedef vector<HalfEdge_Parallel> HalfEdgeCloud_P;
 	typedef vector<HalfEdge_Serial> HalfEdgeCloud_S;
 	typedef vector<Point2Edge> HalfPointCloud_P;
 
+	//外接包围盒
 	struct Box {
 		Vectorf u_0;
 		Vectorf u_1;
@@ -262,6 +267,11 @@ namespace orth
 		return false;
 	}
 
+
+	//***************************************//
+	//			    基本模型类型              //
+	//***************************************//
+
 	//model base class
 	class MeshModel
 	{
@@ -280,6 +290,7 @@ namespace orth
 		Faces F;
 		FacesNormal FN;
 		PointLabel L;
+		SamplePoints S;
 		PointCurs Cur;
 		PointLabel Selected;
 
