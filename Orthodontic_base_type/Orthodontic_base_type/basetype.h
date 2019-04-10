@@ -334,6 +334,10 @@ namespace orth
 
 	};
 
+	//***************************************//
+	//			    模型基本运算              //
+	//***************************************//
+
 	//最邻近点查询
 	inline bool NearestPointSearch(orth::MeshModel *mm_target, orth::MeshModel *mm_query, const int Qctree_depth, vector<unsigned int> &query_index, vector<double> &nearest_distance)
 	{
@@ -602,7 +606,43 @@ namespace orth
 		return true;
 	}
 
+	//模型合并
+	inline bool MergeModels(vector<orth::MeshModel> &mm_group_input,orth::MeshModel &mm_output)
+	{
+		if (mm_group_input.size()<=0)
+		{
+			return false;
+		}
 
+		mm_output.Clear();
+
+		for (size_t group_index = 0; group_index < mm_group_input.size(); group_index++)
+		{
+			vector<Index_ui> new_point_index(mm_group_input[group_index].P.size());
+			for (size_t point_index = 0; point_index < mm_group_input[group_index].P.size(); point_index++)
+			{
+
+				mm_output.P.push_back(mm_group_input[group_index].P[point_index]);
+				mm_output.N.push_back(mm_group_input[group_index].N[point_index]);
+				mm_output.C.push_back(mm_group_input[group_index].C[point_index]);
+				mm_output.L.push_back(mm_group_input[group_index].L[point_index]);
+				//models[L[point_index]].Cur.push_back(Cur[point_index]);
+				new_point_index[point_index] = (mm_output.P.size() - 1);
+			}
+			for (size_t face_index = 0; face_index < (mm_group_input[group_index].F.size()); face_index++)
+			{
+
+				Index_ui l_point1 = mm_group_input[group_index].F[face_index].x;
+				Index_ui l_point2 = mm_group_input[group_index].F[face_index].y;
+				Index_ui l_point3 = mm_group_input[group_index].F[face_index].z;
+				orth::Face l_face(new_point_index[l_point1], new_point_index[l_point2], new_point_index[l_point3]);
+				mm_output.F.push_back(l_face);
+				mm_output.FN.push_back(mm_group_input[group_index].FN[face_index]);
+			}
+		}
+
+		return true;
+	}
 
 
 

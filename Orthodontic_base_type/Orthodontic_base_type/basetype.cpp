@@ -203,6 +203,11 @@ namespace orth
 			EdgeUpdate(1);
 		}
 
+		if (FN.size()==0)
+		{
+			this->NormalUpdate();
+		}
+
 		L.resize(P.size(), -1);
 
 		Index_ui label_index = 0;
