@@ -569,12 +569,20 @@ namespace orth
 				{
 					break;
 				}
-				for (size_t x_index = temp_x - cycle_index; x_index <= temp_x + cycle_index; ++x_index)
+
+				int x_start = temp_x - cycle_index > 0 ? temp_x - cycle_index : 0;
+				int y_start = temp_y - cycle_index > 0 ? temp_y - cycle_index : 0;
+				int z_start = temp_z - cycle_index > 0 ? temp_z - cycle_index : 0;
+				int x_end = temp_x + cycle_index < size ? temp_x + cycle_index : size - 1;
+				int y_end = temp_y + cycle_index < size ? temp_y + cycle_index : size - 1;
+				int z_end = temp_z + cycle_index < size ? temp_z + cycle_index : size - 1;
+
+				for (size_t x_index = x_start; x_index <= x_end; ++x_index)
 				{
-					for (size_t y_index = temp_y - cycle_index; y_index <= temp_y + cycle_index; ++y_index)
+					for (size_t y_index = y_start; y_index <= y_end; ++y_index)
 					{
 
-						for (size_t z_index = temp_z - cycle_index; z_index <= temp_z + cycle_index; ++z_index)
+						for (size_t z_index = z_start; z_index <= z_end; ++z_index)
 						{
 							if (target_key_sort[x_index * (int)size*(int)size + y_index * (int)size + z_index].size() > 0)
 							{
@@ -607,9 +615,9 @@ namespace orth
 	}
 
 	//模型合并
-	inline bool MergeModels(vector<orth::MeshModel> &mm_group_input,orth::MeshModel &mm_output)
+	inline bool MergeModels(vector<orth::MeshModel> &mm_group_input, orth::MeshModel &mm_output)
 	{
-		if (mm_group_input.size()<=0)
+		if (mm_group_input.size() <= 0)
 		{
 			return false;
 		}
