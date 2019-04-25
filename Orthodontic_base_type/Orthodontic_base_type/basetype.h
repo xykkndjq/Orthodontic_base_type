@@ -278,9 +278,7 @@ namespace orth
 	public:
 		MeshModel();
 		~MeshModel();
-		void resize(int s);
 
-		void Clear();
 
 		inline int size() { return size_; }
 
@@ -309,25 +307,40 @@ namespace orth
 
 		Box box;
 
-		bool HaveData();
 
-		///void DateDownload(Eigen::MatrixXd &Verts, Eigen::MatrixXi &Faces);
+
+		//void DateDownload(Eigen::MatrixXd &Verts, Eigen::MatrixXi &Faces);
 
 		void PointRot(double *rt_matrix, Point3d *point);
 
 		void PointRot(double *rt_matrix, Point3f *point);
 
+		void resize(int s);
+
+		void Clear();
+
+		bool HaveData();
+
+		//计算Model法相；
 		bool NormalUpdate();
 
-		///PSTypeChoes : 计算类型串行或并行
+		//法相平滑计算，输入平滑迭代次数；
+		void NormalSmooth(const int iter_times);
+
+		//PSTypeChoes : 计算类型串行或并行
 		bool EdgeUpdate(const bool PSTypeChoes = 1);
 
-		///模型分割函数，对当前模型进行分解，不连续的mesh被分为独立的个体并用Label进行标记
+		//模型分割函数，对当前模型进行分解，不连续的mesh被分为独立的个体并用Label进行标记；
 		bool ModelSplit(vector<orth::MeshModel> &models);
 
-		///计算采样点
-		///rate : 采样率，最终采样后剩余数量
+		//计算采样点
+		//rate : 采样率，最终采样后剩余数量；
 		void ModelSample(const int rate);
+
+		//将model划分成小区域，对小区域进行筛选，点数小于阈值的被筛掉，输入筛选用阈值；
+		bool SmallModelFilter(const int point_number_threshold);
+
+
 	private:
 		int size_ = 0;
 
@@ -652,9 +665,6 @@ namespace orth
 		return true;
 	}
 
-
-
-
 	// teeth model
 	class Teeth :public MeshModel
 	{
@@ -741,7 +751,6 @@ namespace orth
 	private:
 
 	};
-
 
 }
 

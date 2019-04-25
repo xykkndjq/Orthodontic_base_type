@@ -23,7 +23,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="basetype.h" />
-    <ClInclude Include="Point.hpp" />
+    <ClInclude Include="include\Point.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D1485502-E8DD-4381-B627-B137F62E4D38}</ProjectGuid>

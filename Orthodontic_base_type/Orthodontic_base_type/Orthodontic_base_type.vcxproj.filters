@@ -23,7 +23,7 @@
     <ClInclude Include="basetype.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Point.hpp">
+    <ClInclude Include="include\Point.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
