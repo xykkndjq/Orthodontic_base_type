@@ -287,6 +287,10 @@ namespace orth
 			models[l_label].FN.push_back(FN[face_index]);
 		}
 
+
+		P2Edge.clear();
+		Edge_P.clear();
+
 		return true;
 
 	}
@@ -424,6 +428,7 @@ namespace orth
 		}
 		FN.swap(new_face_normal);
 		L.clear();
+
 		P2Edge.clear();
 		Edge_P.clear();
 
@@ -453,6 +458,9 @@ namespace orth
 			N.swap(new_normal);
 			new_normal.clear();
 		}
+
+		P2Edge.clear();
+		Edge_P.clear();
 	}
 
 	void MeshModel::ModelSample(const int rate)
