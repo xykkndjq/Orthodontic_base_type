@@ -112,7 +112,7 @@ namespace orth
 					Edge_P[face_index * 3 + point_].CurrentPoint = point_index[point_];
 					Edge_P[face_index * 3 + point_].EndPoint = point_index[point_ + 1];
 					Edge_P[face_index * 3 + point_].CurrentFace = face_index;
-					if (point_ == 3)
+					if (point_ == 2)
 					{
 						Edge_P[face_index * 3 + point_].NextEdge = face_index * 3;
 
