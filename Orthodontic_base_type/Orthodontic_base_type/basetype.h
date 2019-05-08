@@ -5,6 +5,7 @@
 #include <vector>
 #include "Point.hpp"
 #include <iomanip> 
+#include <memory>
 
 using std::vector;
 
@@ -42,7 +43,8 @@ namespace orth
 		Vectord* EndPoint;
 		HalfEdge_Serial* OppoEdge;
 		Face* CurrentFace;
-		HalfEdge_Serial* NextEdge;
+		//HalfEdge_Serial* NextEdge;
+		std::shared_ptr<HalfEdge_Serial> NextEdge;
 		bool SearchLabel;
 	};
 
@@ -57,8 +59,9 @@ namespace orth
 	typedef vector<Index_ui> SamplePoints;
 	typedef vector<Curvature> PointCurs;
 	typedef vector<HalfEdge_Parallel> HalfEdgeCloud_P;
-	typedef vector<HalfEdge_Serial> HalfEdgeCloud_S;
+	typedef std::shared_ptr<HalfEdge_Serial> HalfEdgeCloud_S;
 	typedef vector<Point2Edge> HalfPointCloud_P;
+	typedef vector<Point2Edge> HalfPointCloud_S;
 
 	//外接包围盒
 	struct Box {
@@ -331,7 +334,7 @@ namespace orth
 		bool EdgeUpdate(const bool PSTypeChoes = 1);
 
 		//模型分割函数，对当前模型进行分解，不连续的mesh被分为独立的个体并用Label进行标记；
-		bool ModelSplit(vector<orth::MeshModel> &models);
+		bool ModelSplit(vector<orth::MeshModel> &models, const int small_mesh_filter);
 
 		//计算采样点
 		//rate : 采样率，最终采样后剩余数量；
