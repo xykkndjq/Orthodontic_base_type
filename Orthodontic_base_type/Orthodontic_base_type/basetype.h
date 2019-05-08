@@ -643,16 +643,31 @@ namespace orth
 		for (size_t group_index = 0; group_index < mm_group_input.size(); group_index++)
 		{
 			vector<Index_ui> new_point_index(mm_group_input[group_index].P.size());
-			for (size_t point_index = 0; point_index < mm_group_input[group_index].P.size(); point_index++)
+			if (mm_group_input[group_index].C.size()>0)
 			{
-
-				mm_output.P.push_back(mm_group_input[group_index].P[point_index]);
-				mm_output.N.push_back(mm_group_input[group_index].N[point_index]);
-				mm_output.C.push_back(mm_group_input[group_index].C[point_index]);
-				mm_output.L.push_back(mm_group_input[group_index].L[point_index]);
-				//models[L[point_index]].Cur.push_back(Cur[point_index]);
-				new_point_index[point_index] = (mm_output.P.size() - 1);
+				for (size_t point_index = 0; point_index < mm_group_input[group_index].P.size(); point_index++)
+				{
+					mm_output.P.push_back(mm_group_input[group_index].P[point_index]);
+					mm_output.N.push_back(mm_group_input[group_index].N[point_index]);
+					mm_output.C.push_back(mm_group_input[group_index].C[point_index]);
+					//mm_output.L.push_back(mm_group_input[group_index].L[point_index]);
+					//models[L[point_index]].Cur.push_back(Cur[point_index]);
+					new_point_index[point_index] = (mm_output.P.size() - 1);
+				}
 			}
+			else
+			{
+				for (size_t point_index = 0; point_index < mm_group_input[group_index].P.size(); point_index++)
+				{
+					mm_output.P.push_back(mm_group_input[group_index].P[point_index]);
+					mm_output.N.push_back(mm_group_input[group_index].N[point_index]);
+					mm_output.C.push_back(orth::Color(128,128,128));
+					//mm_output.L.push_back(mm_group_input[group_index].L[point_index]);
+					//models[L[point_index]].Cur.push_back(Cur[point_index]);
+					new_point_index[point_index] = (mm_output.P.size() - 1);
+				}
+			}
+
 			for (size_t face_index = 0; face_index < (mm_group_input[group_index].F.size()); face_index++)
 			{
 
@@ -661,9 +676,11 @@ namespace orth
 				Index_ui l_point3 = mm_group_input[group_index].F[face_index].z;
 				orth::Face l_face(new_point_index[l_point1], new_point_index[l_point2], new_point_index[l_point3]);
 				mm_output.F.push_back(l_face);
-				mm_output.FN.push_back(mm_group_input[group_index].FN[face_index]);
+				//mm_output.FN.push_back(mm_group_input[group_index].FN[face_index]);
 			}
 		}
+
+
 
 		return true;
 	}
