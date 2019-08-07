@@ -9,16 +9,19 @@
 
 using std::vector;
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846   // pi
+#endif
 // Orthodontics library
 namespace orth
 {
 	//***************************************//
-	//			    »ù´¡Êı¾İÀàĞÍ              //
+	//			    ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½              //
 	//***************************************//
 
 	typedef Point3f Vectorf;
 	typedef Point3d Vectord;
-	typedef Point3d Normal;
+	typedef Point3f Normal;
 	typedef Point3ui Face;
 	typedef Point3uc Color;
 	typedef double Curvature;
@@ -48,7 +51,7 @@ namespace orth
 		bool SearchLabel;
 	};
 
-	//»ù´¡Í¼ĞÎÀàĞÍ
+	//ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	typedef vector<Vectord> PointCloudD;
 	typedef vector<Vectorf> PointCloudF;
 	typedef vector<Normal> PointNormal;
@@ -63,7 +66,7 @@ namespace orth
 	typedef vector<Point2Edge> HalfPointCloud_P;
 	typedef vector<Point2Edge> HalfPointCloud_S;
 
-	//Íâ½Ó°üÎ§ºĞ
+	//ï¿½ï¿½Ó°ï¿½Î§ï¿½ï¿½
 	struct Box {
 		Vectorf u_0;
 		Vectorf u_1;
@@ -130,24 +133,34 @@ namespace orth
 	//};
 
 	//***************************************//
-	//			      »ù´¡¼ÆËã               //
+	//			      ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½               //
 	//**************************************//
 
-	//Èı½ÇĞÎ·¨Ïà¼ÆËã
+	//ï¿½ï¿½ï¿½ï¿½ï¿½Î·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	inline Normal TriangleNormal(Point3d &point_a, Point3d &point_b, Point3d &point_c)
 	{
 		return ((point_b - point_a).cross(point_c - point_a));
 	}
+	inline Normal TriangleNormal(Point3f &point_a, Point3f &point_b, Point3f &point_c)
+	{
+		return ((point_b - point_a).cross(point_c - point_a));
+	}
 
-	//µãµ½µã¾àÀë
+	//ï¿½ãµ½ï¿½ï¿½ï¿½ï¿½ï¿½
 	inline double Point2PointDistance(Point3d &p1, Point3d &p2)
 	{
 		//double dis = (p1.x - p2.x)*(p1.x - p2.x) + (p1.y - p2.y)*(p1.y - p2.y) + (p1.z - p2.z)*(p1.z - p2.z);
 		double dis = (p1 - p2).dot(p1 - p2);
 		return sqrt(dis);
 	}
+	inline float Point2PointDistance(Point3f &p1, Point3f &p2)
+	{
+		//float dis = (p1.x - p2.x)*(p1.x - p2.x) + (p1.y - p2.y)*(p1.y - p2.y) + (p1.z - p2.z)*(p1.z - p2.z);
+		float dis = (p1 - p2).dot(p1 - p2);
+		return sqrt(dis);
+	}
 
-	//µãµ½Æ½Ãæ¾àÀë
+	//ï¿½ãµ½Æ½ï¿½ï¿½ï¿½ï¿½ï¿½
 	inline double Point2PlaneDistance(Point3d &point, Plane &target_plane)
 	{
 		double a = target_plane.A, b = target_plane.B, c = target_plane.C, d = target_plane.D;
@@ -155,8 +168,15 @@ namespace orth
 		double n = sqrt(a*a + b * b + c * c);
 		return pqdot / n;
 	}
+	inline float Point2PlaneDistance(Point3f &point, Plane &target_plane)
+	{
+		float a = target_plane.A, b = target_plane.B, c = target_plane.C, d = target_plane.D;
+		float pqdot = a * point.x + b * point.y + c * point.z + d;
+		float n = sqrt(a*a + b * b + c * c);
+		return pqdot / n;
+	}
 
-	//µãµ½Æ½Ãæ¾àÀë
+	//ï¿½ãµ½Æ½ï¿½ï¿½ï¿½ï¿½ï¿½
 	inline double Point2PlaneDistance(Point3d &point, Point3d &point_a, Point3d &point_b, Point3d &point_c)
 	{
 		Point3d ab = point_b - point_a;
@@ -167,8 +187,18 @@ namespace orth
 		double n = sqrt(a*a + b * b + c * c);
 		return pqdot / n;
 	}
+	inline float Point2PlaneDistance(Point3f &point, Point3f &point_a, Point3f &point_b, Point3f &point_c)
+	{
+		Point3f ab = point_b - point_a;
+		Point3f ac = point_c - point_a;
+		Point3f normal_vector = ab.cross(ac);
+		float a = normal_vector.x, b = normal_vector.y, c = normal_vector.z; float d = -a * point_a.x - b * point_a.y - c * point_a.z;
+		float pqdot = a * point.x + b * point.y + c * point.z + d;
+		float n = sqrt(a*a + b * b + c * c);
+		return pqdot / n;
+	}
 
-	//plucker×ø±ê¼ÆËã
+	//pluckerï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	inline void plucker(Point3d &a, Point3d &b, double* l)
 	{
 		l[0] = a.x*b.y - b.x*a.y;
@@ -178,15 +208,30 @@ namespace orth
 		l[4] = a.z - b.z;
 		l[5] = b.y - a.y;
 	}
+	inline void plucker(Point3f &a, Point3f &b, float* l)
+	{
+		l[0] = a.x*b.y - b.x*a.y;
+		l[1] = a.x*b.z - b.x*a.z;
+		l[2] = a.x - b.x;
+		l[3] = a.y*b.z - b.y*a.z;
+		l[4] = a.z - b.z;
+		l[5] = b.y - a.y;
+	}
 
-	//plucker·½Ïò¼ÆËã
+	//pluckerï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	inline double sideOp(double *a, double *b)
 	{
 		double res = a[0] * b[4] + a[1] * b[5] + a[2] * b[3] + a[3] * b[2] + a[4] * b[0] + a[5] * b[1];
 		return res;
 	}
+	inline float sideOp(float *a, float *b)
+	{
+		float res = a[0] * b[4] + a[1] * b[5] + a[2] * b[3] + a[3] * b[2] + a[4] * b[0] + a[5] * b[1];
+		return res;
+	}
 
-	//ÏßÃæÏà½»ÅĞ¶Ï
+
+	//ï¿½ï¿½ï¿½ï¿½ï¿½à½»ï¿½Ğ¶ï¿½
 	inline int LineFaceIntersect(Point3d &l1, Point3d &l2, Point3d &a, Point3d &b, Point3d &c)
 	{
 		double e1[6] = { 0 }, e2[6] = { 0 }, e3[6] = { 0 }, L[6] = { 0 };
@@ -222,8 +267,43 @@ namespace orth
 			return NONINTERSECT;
 		}
 	}
+	inline int LineFaceIntersect(Point3f &l1, Point3f &l2, Point3f &a, Point3f &b, Point3f &c)
+	{
+		float e1[6] = { 0 }, e2[6] = { 0 }, e3[6] = { 0 }, L[6] = { 0 };
+		plucker(b, a, e1);
+		plucker(c, b, e2);
+		plucker(a, c, e3);
+		plucker(l1, l2, L);
 
-	//ÃæÏà½»
+		float s1 = sideOp(L, e1);
+		float s2 = sideOp(L, e2);
+		float s3 = sideOp(L, e3);
+
+		//cout << s1<<" --- " << s2 << " --- " << s3 << endl;
+
+		if (s1 == 0 && s2 == 0 && s3 == 0)
+		{
+			return COPLANE;
+		}
+		else if ((s1 > 0 && s2 > 0 && s3 > 0) || (s1 < 0 && s2 < 0 && s3 < 0))
+		{
+			return ACROSS;
+		}
+		else if ((s1 == 0 && s2*s3 > 0) || (s2 == 0 && s1*s3 > 0) || (s3 == 0 && s1*s2 > 0))
+		{
+			return AEDGE;
+		}
+		else if ((s1 == 0 && s2 == 0) || (s1 == 0 && s3 == 0) || (s3 == 0 && s2 == 0))
+		{
+			return AVERTEX;
+		}
+		else
+		{
+			return NONINTERSECT;
+		}
+	}
+
+	//ï¿½ï¿½ï¿½à½»
 	inline bool FaceIntersect(Point3d &a1, Point3d &b1, Point3d &c1, Point3d &a2, Point3d &b2, Point3d &c2)
 	{
 
@@ -269,10 +349,54 @@ namespace orth
 		}
 		return false;
 	}
+	inline bool FaceIntersect(Point3f &a1, Point3f &b1, Point3f &c1, Point3f &a2, Point3f &b2, Point3f &c2)
+	{
 
+		if (LineFaceIntersect(a1, b1, a2, b2, c2) == ACROSS)
+		{
+			float dis1 = Point2PlaneDistance(a1, a2, b2, c2);
+			float dis2 = Point2PlaneDistance(b1, a2, b2, c2);
+			if (dis1*dis2 < 0)
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+
+		}
+		if (LineFaceIntersect(a1, c1, a2, b2, c2) == ACROSS)
+		{
+			float dis1 = Point2PlaneDistance(a1, a2, b2, c2);
+			float dis2 = Point2PlaneDistance(c1, a2, b2, c2);
+			if (dis1*dis2 < 0)
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		if (LineFaceIntersect(b1, c1, a2, b2, c2) == ACROSS)
+		{
+			float dis1 = Point2PlaneDistance(b1, a2, b2, c2);
+			float dis2 = Point2PlaneDistance(c1, a2, b2, c2);
+			if (dis1*dis2 < 0)
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		return false;
+	}
 
 	//***************************************//
-	//			    »ù±¾Ä£ĞÍÀàĞÍ              //
+	//			    ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½              //
 	//***************************************//
 
 	//model base class
@@ -285,7 +409,7 @@ namespace orth
 
 		inline int size() { return size_; }
 
-		PointCloudD P;
+		PointCloudF P;
 		PointNormal N;
 		PointColor C;
 		Faces F;
@@ -305,7 +429,7 @@ namespace orth
 		Point3d current_center;
 		double* current_rt;
 
-		vector<Point3d> motion_path;
+		vector<Point3f> motion_path;
 		vector<double*> rot_path;
 
 		Box box;
@@ -313,6 +437,8 @@ namespace orth
 
 
 		//void DateDownload(Eigen::MatrixXd &Verts, Eigen::MatrixXi &Faces);
+
+		void NormalRot(double *rt_matrix, Normal *normal);
 
 		void PointRot(double *rt_matrix, Point3d *point);
 
@@ -324,24 +450,27 @@ namespace orth
 
 		bool HaveData();
 
-		//¼ÆËãModel·¨Ïà£»
+		//ï¿½ï¿½ï¿½ï¿½Modelï¿½ï¿½ï¿½à£»
 		bool NormalUpdate();
 
-		//·¨ÏàÆ½»¬¼ÆËã£¬ÊäÈëÆ½»¬µü´ú´ÎÊı£»
+		//ï¿½ï¿½ï¿½ï¿½Æ½ï¿½ï¿½ï¿½ï¿½ï¿½ã£¬ï¿½ï¿½ï¿½ï¿½Æ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		void NormalSmooth(const int iter_times);
 
-		//PSTypeChoes : ¼ÆËãÀàĞÍ´®ĞĞ»ò²¢ĞĞ
+		//PSTypeChoes : ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í´ï¿½ï¿½Ğ»ï¿½ï¿½ï¿½
 		bool EdgeUpdate(const bool PSTypeChoes = 1);
 
-		//Ä£ĞÍ·Ö¸îº¯Êı£¬¶Ôµ±Ç°Ä£ĞÍ½øĞĞ·Ö½â£¬²»Á¬ĞøµÄmesh±»·ÖÎª¶ÀÁ¢µÄ¸öÌå²¢ÓÃLabel½øĞĞ±ê¼Ç£»
+		//Ä£ï¿½Í·Ö¸îº¯ï¿½ï¿½ï¿½ï¿½ï¿½Ôµï¿½Ç°Ä£ï¿½Í½ï¿½ï¿½Ğ·Ö½â£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½meshï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Ä¸ï¿½ï¿½å²¢ï¿½ï¿½Labelï¿½ï¿½ï¿½Ğ±ï¿½Ç£ï¿½
 		bool ModelSplit(vector<orth::MeshModel> &models, const int small_mesh_filter);
 
-		//¼ÆËã²ÉÑùµã
-		//rate : ²ÉÑùÂÊ£¬×îÖÕ²ÉÑùºóÊ£ÓàÊıÁ¿£»
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		//rate : ï¿½ï¿½ï¿½ï¿½ï¿½Ê£ï¿½ï¿½ï¿½ï¿½Õ²ï¿½ï¿½ï¿½ï¿½ï¿½Ê£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		void ModelSample(const int rate);
 
-		//½«model»®·Ö³ÉĞ¡ÇøÓò£¬¶ÔĞ¡ÇøÓò½øĞĞÉ¸Ñ¡£¬µãÊıĞ¡ÓÚãĞÖµµÄ±»É¸µô£¬ÊäÈëÉ¸Ñ¡ÓÃãĞÖµ£»
+		//ï¿½ï¿½modelï¿½ï¿½ï¿½Ö³ï¿½Ğ¡ï¿½ï¿½ï¿½ò£¬¶ï¿½Ğ¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É¸Ñ¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ¡ï¿½ï¿½ï¿½ï¿½Öµï¿½Ä±ï¿½É¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É¸Ñ¡ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 		bool SmallModelFilter(const int point_number_threshold);
+
+		//delete duplicate vertexs in model
+		void RemoveDuplicateVertex();
 
 
 	private:
@@ -351,10 +480,10 @@ namespace orth
 	};
 
 	//***************************************//
-	//			    Ä£ĞÍ»ù±¾ÔËËã              //
+	//			    Ä£ï¿½Í»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½              //
 	//***************************************//
 
-	//×îÁÚ½üµã²éÑ¯
+	//ï¿½ï¿½ï¿½Ú½ï¿½ï¿½ï¿½ï¿½Ñ¯
 	inline bool NearestPointSearch(orth::MeshModel *mm_target, orth::MeshModel *mm_query, const int Qctree_depth, vector<unsigned int> &query_index, vector<double> &nearest_distance)
 	{
 		if (mm_query->P.size() == 0)
@@ -364,7 +493,7 @@ namespace orth
 		query_index.resize(mm_query->P.size());
 		nearest_distance.resize(mm_query->P.size());
 
-		//ÇóÍâ½Ó¾ØĞÎ
+		//ï¿½ï¿½ï¿½ï¿½Ó¾ï¿½ï¿½ï¿½
 		double x_min = 1000, x_max = -1000, y_min = 1000, y_max = -1000, z_min = 1000, z_max = -1000;
 		for (size_t point_index = 0; point_index < mm_target->P.size(); point_index++)
 		{
@@ -404,7 +533,7 @@ namespace orth
 
 		double size = (pow(2, Qctree_depth));
 
-		//ÇóÄ¿±êµãÔÆµÄkey
+		//ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½Æµï¿½key
 		vector<unsigned __int32> target_key(mm_target->P.size());
 
 		for (size_t points_index = 0; points_index < mm_target->P.size(); points_index++)
@@ -470,14 +599,14 @@ namespace orth
 			target_key[points_index] = key;
 		}
 
-		//°´ÕÕnodeÀ´Í³¼Æµã
+		//ï¿½ï¿½ï¿½ï¿½nodeï¿½ï¿½Í³ï¿½Æµï¿½
 		vector<vector<unsigned __int32>> target_key_sort(size*size*size);
 		for (size_t points_index = 0; points_index < mm_target->P.size(); points_index++)
 		{
 			target_key_sort[target_key[points_index]].push_back(points_index);
 		}
 
-		//Çó²éÑ¯µãÔÆµÄkey
+		//ï¿½ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½Æµï¿½key
 		vector<unsigned int> Qctree_key(mm_query->P.size());
 
 		for (size_t points_index = 0; points_index < mm_query->P.size(); points_index++)
@@ -550,7 +679,7 @@ namespace orth
 			Qctree_key[points_index] = key;
 		}
 
-		//Çó²éÑ¯µãÔÆµÄ×î½üµã
+		//ï¿½ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 		for (size_t points_index = 0; points_index < mm_query->P.size(); points_index++)
 		{
@@ -559,7 +688,7 @@ namespace orth
 				continue;
 			}
 
-			orth::Point3d query_point = mm_query->P[points_index];
+			orth::Point3f query_point = mm_query->P[points_index];
 			vector<unsigned __int32> searched_points;
 			int break_label = 2;
 
@@ -630,7 +759,342 @@ namespace orth
 		return true;
 	}
 
-	//Ä£ĞÍºÏ²¢
+	//ï¿½ï¿½ï¿½Ú½ï¿½ï¿½ï¿½ï¿½Ñ¯
+	inline bool RadiusPointSearch(orth::MeshModel *mm_target, orth::MeshModel *mm_query, const float radius, const int Qctree_depth, vector<vector<unsigned int>> &query_index, vector<vector<double>> &nearest_distance)
+	{
+		if (mm_query->P.size() == 0)
+		{
+			return false;
+		}
+		query_index.resize(mm_query->P.size());
+		nearest_distance.resize(mm_query->P.size());
+		vector<bool> wrong_flag(mm_query->P.size(), false);
+
+		//ï¿½ï¿½ï¿½ï¿½Ó¾ï¿½ï¿½ï¿½
+		double x_min = 1000, x_max = -1000, y_min = 1000, y_max = -1000, z_min = 1000, z_max = -1000;
+		for (size_t point_index = 0; point_index < mm_target->P.size(); point_index++)
+		{
+			double x = mm_target->P[point_index].x;
+			double y = mm_target->P[point_index].y;
+			double z = mm_target->P[point_index].z;
+			if (x < x_min)
+			{
+				x_min = x;
+			}
+			if (x > x_max)
+			{
+				x_max = x;
+			}
+			if (y < y_min)
+			{
+				y_min = y;
+			}
+			if (y > y_max)
+			{
+				y_max = y;
+			}
+			if (z < z_min)
+			{
+				z_min = z;
+			}
+			if (z > z_max)
+			{
+				z_max = z;
+			}
+		}
+
+		//cout << " x_min = " << x_min << " y_min = " << y_min << " z_min = " << z_min << " x_max = " << x_max << " y_max = " << y_max << " z_max = " << z_max << endl;
+
+		x_min -= 5; y_min -= 5; z_min -= 5;
+		x_max += 5; y_max += 5; z_max += 5;
+
+		double size = (pow(2, Qctree_depth));
+
+		//ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½Æµï¿½key
+		vector<unsigned __int32> target_key(mm_target->P.size());
+
+		for (size_t points_index = 0; points_index < mm_target->P.size(); points_index++)
+		{
+			unsigned __int32 key = 0;
+
+			double cell_size_x = (x_max - x_min) / (size);
+			double cell_size_y = (y_max - y_min) / (size);
+			double cell_size_z = (z_max - z_min) / (size);
+
+			double x = mm_target->P[points_index].x - x_min;
+			double y = mm_target->P[points_index].y - y_min;
+			double z = mm_target->P[points_index].z - z_min;
+
+			unsigned __int32 temp_x = floor(x / cell_size_x);
+			unsigned __int32 temp_y = floor(y / cell_size_y);
+			unsigned __int32 temp_z = floor(z / cell_size_z);
+
+			key = temp_x * (int)size*(int)size + temp_y * (int)size + temp_z;
+
+			target_key[points_index] = key;
+		}
+
+		//ï¿½ï¿½ï¿½ï¿½nodeï¿½ï¿½Í³ï¿½Æµï¿½
+		vector<vector<unsigned __int32>> target_key_sort(size*size*size);
+		for (size_t points_index = 0; points_index < mm_target->P.size(); points_index++)
+		{
+			target_key_sort[target_key[points_index]].push_back(points_index);
+		}
+
+		//ï¿½ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½Æµï¿½key
+		vector<unsigned int> Qctree_key(mm_query->P.size());
+
+		for (size_t points_index = 0; points_index < mm_query->P.size(); points_index++)
+		{
+			unsigned __int32 key = 0;
+
+			if (mm_query->P[points_index].x<x_min || mm_query->P[points_index].x>x_max || mm_query->P[points_index].y<y_min || mm_query->P[points_index].y>y_max || mm_query->P[points_index].z<z_min || mm_query->P[points_index].z>z_max)
+			{
+				//nearest_distance[points_index] = -1;
+				wrong_flag[points_index] = true;
+				continue;
+			}
+
+			double cell_size_x = (x_max - x_min) / (size);
+			double cell_size_y = (y_max - y_min) / (size);
+			double cell_size_z = (z_max - z_min) / (size);
+
+			double x = mm_query->P[points_index].x - x_min;
+			double y = mm_query->P[points_index].y - y_min;
+			double z = mm_query->P[points_index].z - z_min;
+
+
+
+			unsigned __int32 temp_x = floor(x / cell_size_x);
+			unsigned __int32 temp_y = floor(y / cell_size_y);
+			unsigned __int32 temp_z = floor(z / cell_size_z);
+
+			key = temp_x * (int)size*(int)size + temp_y * (int)size + temp_z;
+
+			Qctree_key[points_index] = key;
+		}
+
+		//ï¿½ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+
+		for (size_t points_index = 0; points_index < mm_query->P.size(); points_index++)
+		{
+			if (wrong_flag[points_index])
+			{
+				continue;
+			}
+
+			orth::Point3f query_point = mm_query->P[points_index];
+			vector<unsigned __int32> searched_points;
+			int break_label = 2;
+
+			double cell_size_x = (x_max - x_min) / (size);
+			double cell_size_y = (y_max - y_min) / (size);
+			double cell_size_z = (z_max - z_min) / (size);
+
+			double cycle_radius_x = ceil(radius / cell_size_x);
+			double cycle_radius_y = ceil(radius / cell_size_y);
+			double cycle_radius_z = ceil(radius / cell_size_z);
+
+			double x = mm_query->P[points_index].x - x_min;
+			double y = mm_query->P[points_index].y - y_min;
+			double z = mm_query->P[points_index].z - z_min;
+
+			unsigned __int32 temp_x = floor(x / cell_size_x);
+			unsigned __int32 temp_y = floor(y / cell_size_y);
+			unsigned __int32 temp_z = floor(z / cell_size_z);
+
+			//for (size_t cycle_index = 0; cycle_index < Qctree_depth - 1; ++cycle_index)
+			{
+				if (searched_points.size() > 0)
+				{
+					break_label--;
+				}
+				if (!break_label)
+				{
+					break;
+				}
+
+				int x_start = temp_x - cycle_radius_x > 0 ? temp_x - cycle_radius_x : 0;
+				int y_start = temp_y - cycle_radius_y > 0 ? temp_y - cycle_radius_y : 0;
+				int z_start = temp_z - cycle_radius_z > 0 ? temp_z - cycle_radius_z : 0;
+				int x_end = temp_x + cycle_radius_x < size ? temp_x + cycle_radius_x : size - 1;
+				int y_end = temp_y + cycle_radius_y < size ? temp_y + cycle_radius_y : size - 1;
+				int z_end = temp_z + cycle_radius_z < size ? temp_z + cycle_radius_z : size - 1;
+
+				for (size_t x_index = x_start; x_index <= x_end; ++x_index)
+				{
+					for (size_t y_index = y_start; y_index <= y_end; ++y_index)
+					{
+
+						for (size_t z_index = z_start; z_index <= z_end; ++z_index)
+						{
+							if (target_key_sort[x_index * (int)size*(int)size + y_index * (int)size + z_index].size() > 0)
+							{
+
+								for (size_t point_index = 0; point_index < target_key_sort[x_index * (int)size*(int)size + y_index * (int)size + z_index].size(); point_index++)
+								{
+									int target_point_index = target_key_sort[x_index * (int)size*(int)size + y_index * (int)size + z_index][point_index];
+									double dis = Point2PointDistance(query_point, mm_target->P[target_point_index]);
+									if (dis<radius)
+									{
+										query_index[points_index].push_back(target_point_index);
+										nearest_distance[points_index].push_back(dis);
+									}
+									//searched_points.push_back(target_key_sort[x_index * (int)size*(int)size + y_index * (int)size + z_index][point_index]);
+
+								}
+
+							}
+						}
+					}
+				}
+
+			}
+
+			//nearest_distance[points_index] = 100;
+			//for (size_t search_index = 0; search_index < searched_points.size(); search_index++)
+			//{
+			//	double dis = orth::Point2PointDistance(query_point, mm_target->P[searched_points[search_index]]);
+			//	if (dis < nearest_distance[points_index])
+			//	{
+			//		query_index[points_index] = searched_points[search_index];
+			//		nearest_distance[points_index] = dis;
+			//	}
+			//}
+		}
+
+		return true;
+	}
+
+
+	//meshå†—ä½™ç‚¹çº¦å‡
+	//mm:æ¨¡å‹è¾“å…¥	distance_threashold:åˆ¤æ–­å†—ä½™é‡‡ç”¨çš„è·ç¦»é˜ˆå€¼	Qctree_depth:å…«å‰æ ‘æ·±åº¦
+	inline bool DuplicateVertexRemove(orth::MeshModel *mm,const float distance_threashold, int Qctree_depth)
+		//inline bool NearestPointSearch(orth::MeshModel *mm_target, orth::MeshModel *mm_query, const int Qctree_depth, vector<unsigned int> &query_index, vector<double> &nearest_distance)
+	{
+		if (mm->P.size() == 0)
+		{
+			return false;
+		}
+
+
+
+		//æ±‚å¤–æ¥çŸ©å½¢
+		double x_min = 1000, x_max = -1000, y_min = 1000, y_max = -1000, z_min = 1000, z_max = -1000;
+		for (size_t point_index = 0; point_index < mm->P.size(); point_index++)
+		{
+			double x = mm->P[point_index].x;
+			double y = mm->P[point_index].y;
+			double z = mm->P[point_index].z;
+			if (x < x_min)
+			{
+				x_min = x;
+			}
+			if (x > x_max)
+			{
+				x_max = x;
+			}
+			if (y < y_min)
+			{
+				y_min = y;
+			}
+			if (y > y_max)
+			{
+				y_max = y;
+			}
+			if (z < z_min)
+			{
+				z_min = z;
+			}
+			if (z > z_max)
+			{
+				z_max = z;
+			}
+		}
+
+		//cout << " x_min = " << x_min << " y_min = " << y_min << " z_min = " << z_min << " x_max = " << x_max << " y_max = " << y_max << " z_max = " << z_max << endl;
+
+		x_min -= 5; y_min -= 5; z_min -= 5;
+		x_max += 5; y_max += 5; z_max += 5;
+
+		double size = (pow(2, Qctree_depth));
+
+		//æ±‚ç›®æ ‡ç‚¹äº‘çš„key
+		vector<unsigned __int32> target_key(mm->P.size());
+
+		for (size_t points_index = 0; points_index < mm->P.size(); points_index++)
+		{
+			unsigned __int32 key = 0;
+
+			double cell_size_x = (x_max - x_min) / (size);
+			double cell_size_y = (y_max - y_min) / (size);
+			double cell_size_z = (z_max - z_min) / (size);
+
+			double x = mm->P[points_index].x - x_min;
+			double y = mm->P[points_index].y - y_min;
+			double z = mm->P[points_index].z - z_min;
+
+			unsigned __int32 temp_x = floor(x / cell_size_x);
+			unsigned __int32 temp_y = floor(y / cell_size_y);
+			unsigned __int32 temp_z = floor(z / cell_size_z);
+
+			key = temp_x * (int)size*(int)size + temp_y * (int)size + temp_z;
+
+			target_key[points_index] = key;
+		}
+
+		//æŒ‰ç…§nodeæ¥ç»Ÿè®¡ç‚¹
+		vector<vector<unsigned __int32>> target_key_sort(size*size*size);
+		for (size_t points_index = 0; points_index < mm->P.size(); points_index++)
+		{
+			target_key_sort[target_key[points_index]].push_back(points_index);
+		}
+
+		vector<int> query_index(mm->P.size(), -1);
+		orth::PointCloudF final_pointcloud;
+
+
+		//æ±‚å†—ä½™ç‚¹å¹¶æ›´æ–°ç´¢å¼•
+		for (size_t points_index = 0; points_index < query_index.size(); points_index++)
+		{
+			if (query_index[points_index] != -1)
+			{
+				continue;
+			}
+
+			query_index[points_index] = final_pointcloud.size();
+			final_pointcloud.push_back(mm->P[points_index]);
+			orth::Point3f p1 = mm->P[points_index];
+
+			if (target_key_sort[target_key[points_index]].size() > 0)
+			{
+
+				for (size_t i = 0; i < target_key_sort[target_key[points_index]].size(); i++)
+				{
+					orth::Point3f p2 = mm->P[target_key_sort[target_key[points_index]][i]];
+
+					double dis = orth::Point2PointDistance(p1, p2);
+					if (dis<distance_threashold)
+					{
+						query_index[target_key_sort[target_key[points_index]][i]] = query_index[points_index];
+					}
+				}
+			}
+		}
+
+		for (int face_index = 0; face_index < mm->F.size(); face_index++)
+		{
+			mm->F[face_index].x = query_index[mm->F[face_index].x];
+			mm->F[face_index].y = query_index[mm->F[face_index].y];
+			mm->F[face_index].z = query_index[mm->F[face_index].z];
+		}
+
+		mm->P.swap(final_pointcloud);
+
+		return true;
+	}
+
+	//Ä£ï¿½ÍºÏ²ï¿½
 	inline bool MergeModels(vector<orth::MeshModel> &mm_group_input, orth::MeshModel &mm_output)
 	{
 		if (mm_group_input.size() <= 0)
@@ -661,7 +1125,7 @@ namespace orth
 				{
 					mm_output.P.push_back(mm_group_input[group_index].P[point_index]);
 					mm_output.N.push_back(mm_group_input[group_index].N[point_index]);
-					mm_output.C.push_back(orth::Color(128,128,128));
+					mm_output.C.push_back(orth::Color(128, 128, 128));
 					//mm_output.L.push_back(mm_group_input[group_index].L[point_index]);
 					//models[L[point_index]].Cur.push_back(Cur[point_index]);
 					new_point_index[point_index] = (mm_output.P.size() - 1);
@@ -693,22 +1157,22 @@ namespace orth
 		~Teeth();
 
 		// cusp of a teeth
-		vector<Point3d> cusp;
+		vector<Point3f> cusp;
 
 		// b_cusp of a teeth
-		vector<Point3d> cusp_b;
+		vector<Point3f> cusp_b;
 
 		// l_cusp of a teeth
-		vector<Point3d> cusp_l;
+		vector<Point3f> cusp_l;
 
 		// ridge of a teeth
-		vector<Point3d> ridge;
+		vector<Point3f> ridge;
 
 		// groove of a teeth
-		vector<Point3d> groove;
+		vector<Point3f> groove;
 
 		// groove of a teeth
-		vector<Point3d> incisal_edges;
+		vector<Point3f> incisal_edges;
 
 		//buccolingual inc
 		double premolar_theta;
@@ -733,7 +1197,7 @@ namespace orth
 		MaxillaryTeeth();
 		~MaxillaryTeeth();
 
-		vector<Point3d> arch;
+		vector<Point3f> arch;
 
 		Plane occlusion;
 
@@ -755,7 +1219,7 @@ namespace orth
 		InferiorTeeth();
 		~InferiorTeeth();
 
-		vector<Point3d> arch;
+		vector<Point3f> arch;
 
 		Plane occlusion;
 

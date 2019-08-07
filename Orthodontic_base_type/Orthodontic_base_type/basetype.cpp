@@ -62,7 +62,7 @@ namespace orth
 		FN.resize(F.size());
 		for (unsigned int i = 0; i < F.size(); i++)
 		{
-			FN[i] = TriangleNormal(P[F[i].x], P[F[i].y], P[F[i].z]);
+			FN[i] = TriangleNormal(P[F[i].x], P[F[i].y], P[F[i].z])*-1;
 		}
 		vector<int> point_face_number(P.size());
 		for (unsigned int i = 0; i < F.size(); i++)
@@ -435,7 +435,7 @@ namespace orth
 		}
 
 		//按照标记对模型进行过滤
-		PointCloudD new_points;
+		PointCloudF new_points;
 		PointNormal new_normals;
 		PointColor new_colors;
 		vector<Index_ui> new_point_index(P.size());
@@ -462,6 +462,10 @@ namespace orth
 			Index_ui l_point1 = F[face_index].x;
 			Index_ui l_point2 = F[face_index].y;
 			Index_ui l_point3 = F[face_index].z;
+			if (label_filter[l_point1] < 0)
+			{
+				continue;
+			}
 			orth::Face l_face(new_point_index[l_point1], new_point_index[l_point2], new_point_index[l_point3]);
 			new_faces.push_back(l_face);
 			new_face_normal.push_back(FN[face_index]);
@@ -520,6 +524,7 @@ namespace orth
 
 	void MeshModel::ModelSample(const int rate)
 	{
+		S.clear();
 		int jump_number = (int)(P.size() / rate);
 		if (rate > P.size())
 		{
@@ -530,6 +535,11 @@ namespace orth
 		{
 			S.push_back(point_index);
 		}
+	}
+
+	void MeshModel::RemoveDuplicateVertex()
+	{
+
 	}
 
 	//void MeshModel::DateDownload(Eigen::MatrixXd &Verts, Eigen::MatrixXi &Faces)
@@ -645,6 +655,24 @@ namespace orth
 
 	}
 
+
+	void MeshModel::NormalRot(double *rt_matrix, Normal *normal)
+	{
+		float x = normal->x, y = normal->y, z = normal->z;
+		float v_c_x = rt_matrix[0] * x + rt_matrix[1] * y + rt_matrix[2] * z;
+		float v_c_y = rt_matrix[4] * x + rt_matrix[5] * y + rt_matrix[6] * z;
+		float v_c_z = rt_matrix[8] * x + rt_matrix[9] * y + rt_matrix[10] * z;
+		if (v_c_x == NULL || v_c_y == NULL || v_c_z == NULL)
+		{
+			*normal = Point3f(0, 0, 0);
+			return;
+		}
+		normal->x = v_c_x;
+		normal->y = v_c_y;
+		normal->z = v_c_z;
+
+	}
+
 	void MeshModel::PointRot(double *rt_matrix, Point3d *point)
 	{
 		double x = point->x, y = point->y, z = point->z;
@@ -664,10 +692,15 @@ namespace orth
 
 	void MeshModel::PointRot(double *rt_matrix, Point3f *point)
 	{
-		double x = point->x, y = point->y, z = point->z;
-		double v_c_x = rt_matrix[0] * x + rt_matrix[1] * y + rt_matrix[2] * z + rt_matrix[3];
-		double v_c_y = rt_matrix[4] * x + rt_matrix[5] * y + rt_matrix[6] * z + rt_matrix[7];
-		double v_c_z = rt_matrix[8] * x + rt_matrix[9] * y + rt_matrix[10] * z + rt_matrix[11];
+		float x = point->x, y = point->y, z = point->z;
+		float v_c_x = rt_matrix[0] * x + rt_matrix[1] * y + rt_matrix[2] * z + rt_matrix[3];
+		float v_c_y = rt_matrix[4] * x + rt_matrix[5] * y + rt_matrix[6] * z + rt_matrix[7];
+		float v_c_z = rt_matrix[8] * x + rt_matrix[9] * y + rt_matrix[10] * z + rt_matrix[11];
+		if (v_c_x == NULL || v_c_y == NULL || v_c_z == NULL)
+		{
+			*point = Point3f(0, 0, 0);
+			return;
+		}
 		point->x = v_c_x;
 		point->y = v_c_y;
 		point->z = v_c_z;
