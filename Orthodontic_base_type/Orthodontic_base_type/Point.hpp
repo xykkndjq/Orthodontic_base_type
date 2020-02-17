@@ -30,6 +30,10 @@ namespace orth
 		//explicit Point3_(const Point_<_Tp>& pt);
 
 		Point3_& operator = (const Point3_& pt);
+
+		_Tp& operator [] (int b);
+
+
 		//! conversion to another data type
 		template<typename _Tp2> operator Point3_<_Tp2>() const;
 
@@ -126,6 +130,22 @@ namespace orth
 	{
 		x = pt.x; y = pt.y; z = pt.z;
 		return *this;
+	}
+
+	template<typename _Tp> inline
+	_Tp& Point3_<_Tp>::operator [] (int b)
+	{
+		switch (b)
+		{
+		case 0:
+			return this->x;
+		case 1:
+			return this->y;
+		case 2:
+			return this->z;
+		default:
+			break;
+		}
 	}
 
 	template<typename _Tp> inline
