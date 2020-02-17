@@ -1,4 +1,4 @@
-#include "basetype.h"
+ï»¿#include "basetype.h"
 
 
 namespace orth
@@ -222,7 +222,7 @@ namespace orth
 		Index_ui candidate_scan_index = 0;
 		vector<Index_ui> candidate_points_index;
 
-		//´ÓµÚÒ»¸öÃæ¿ªÊ¼É¨Ãè£¬Öğ¸ö¶Ôµã½øĞĞ±ê¼Ç
+		//ä»ç¬¬ä¸€ä¸ªé¢å¼€å§‹æ‰«æï¼Œé€ä¸ªå¯¹ç‚¹è¿›è¡Œæ ‡è®°
 		for (size_t face_index = 0; face_index < F.size(); face_index++)
 		{
 			if (L[F[face_index].x] == -1)
@@ -248,7 +248,7 @@ namespace orth
 
 				L[candidate_points_index[candidate_scan_index]] = label_index;
 
-				//Öğ¸ö¼ÓÈëºòÑ¡µã
+				//é€ä¸ªåŠ å…¥å€™é€‰ç‚¹
 				for (size_t p2e_index = 0; p2e_index < P2Edge[candidate_points_index[candidate_scan_index]].size(); p2e_index++)
 				{
 					if (L[Edge_P[P2Edge[candidate_points_index[candidate_scan_index]][p2e_index]].EndPoint] == -1)
@@ -282,7 +282,7 @@ namespace orth
 
 		}
 
-		//½«±ê¼Çµã°´ÕÕË÷Òı·Ö½â³Éµ¥¶ÀÄ£ĞÍ
+		//å°†æ ‡è®°ç‚¹æŒ‰ç…§ç´¢å¼•åˆ†è§£æˆå•ç‹¬æ¨¡å‹
 		models.resize(final_model_number);
 		vector<Index_ui> new_point_index(P.size());
 		if (C.size()>0)
@@ -364,7 +364,7 @@ namespace orth
 		Index_ui candidate_scan_index = 0;
 		vector<Index_ui> candidate_points_index;
 
-		//´ÓµÚÒ»¸öÃæ¿ªÊ¼É¨Ãè£¬Öğ¸ö¶Ôµã½øĞĞ±ê¼Ç
+		//ä»ç¬¬ä¸€ä¸ªé¢å¼€å§‹æ‰«æï¼Œé€ä¸ªå¯¹ç‚¹è¿›è¡Œæ ‡è®°
 		for (size_t face_index = 0; face_index < F.size(); face_index++)
 		{
 			if (L[F[face_index].x] == -1)
@@ -390,7 +390,7 @@ namespace orth
 
 				L[candidate_points_index[candidate_scan_index]] = label_index;
 
-				//Öğ¸ö¼ÓÈëºòÑ¡µã
+				//é€ä¸ªåŠ å…¥å€™é€‰ç‚¹
 				for (size_t p2e_index = 0; p2e_index < P2Edge[candidate_points_index[candidate_scan_index]].size(); p2e_index++)
 				{
 					if (L[Edge_P[P2Edge[candidate_points_index[candidate_scan_index]][p2e_index]].EndPoint] == -1)
@@ -407,7 +407,7 @@ namespace orth
 
 		}
 
-		//ËÑË÷Ğ¡ÓÚ100¸öµãµÄĞ¡mesh²¢¼ÇÂ¼Æälabel
+		//æœç´¢å°äº100ä¸ªç‚¹çš„å°meshå¹¶è®°å½•å…¶label
 		label_size.push_back(candidate_scan_index);
 		vector<int> index_filted;
 		for (int label_index_ = 0; label_index_ < label_size.size(); label_index_++)
@@ -418,7 +418,7 @@ namespace orth
 			}
 		}
 
-		//ÖØĞÂ±ê¼ÇĞèÒª¹ıÂËµôµÄmesh
+		//é‡æ–°æ ‡è®°éœ€è¦è¿‡æ»¤æ‰çš„mesh
 		PointLabel label_filter(P.size(), 1);
 		for (int point_index = 0; point_index < P.size(); point_index++)
 		{
@@ -434,7 +434,7 @@ namespace orth
 			}
 		}
 
-		//°´ÕÕ±ê¼Ç¶ÔÄ£ĞÍ½øĞĞ¹ıÂË
+		//æŒ‰ç…§æ ‡è®°å¯¹æ¨¡å‹è¿›è¡Œè¿‡æ»¤
 		PointCloudF new_points;
 		PointNormal new_normals;
 		PointColor new_colors;
@@ -471,7 +471,7 @@ namespace orth
 			new_face_normal.push_back(FN[face_index]);
 		}
 
-		//ĞÂÊı¾İÌæ»»
+		//æ–°æ•°æ®æ›¿æ¢
 		F.swap(new_faces);
 		P.swap(new_points);
 		N.swap(new_normals);
@@ -575,7 +575,7 @@ namespace orth
 
 	void Teeth::Rotation(double *rt_matrix)
 	{
-		//Ğı×ª¶¥µã
+		//æ—‹è½¬é¡¶ç‚¹
 		if (P.size())
 		{
 
@@ -585,7 +585,7 @@ namespace orth
 			}
 		}
 
-		//Ğı×ª·¨Ïò
+		//æ—‹è½¬æ³•å‘
 		if (N.size())
 		{
 
@@ -595,7 +595,7 @@ namespace orth
 			}
 		}
 
-		//Ğı×ªÖĞĞÄµã
+		//æ—‹è½¬ä¸­å¿ƒç‚¹
 
 
 		//if (motion_path.size())
@@ -612,7 +612,7 @@ namespace orth
 
 		//}
 
-		////Ğı×ª°üÎ§ºĞ
+		////æ—‹è½¬åŒ…å›´ç›’
 		//if (box.u_0.x)
 		//{
 
@@ -622,7 +622,7 @@ namespace orth
 		//	}
 		//}
 
-		//Ğı×ª¼âµã
+		//æ—‹è½¬å°–ç‚¹
 
 		if (cusp.size() > 0)
 		{

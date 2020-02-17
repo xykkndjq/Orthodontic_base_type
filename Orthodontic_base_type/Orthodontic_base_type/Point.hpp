@@ -48,7 +48,7 @@ namespace orth
 		_Tp* data();
 
 		//normalization current vector
-		void normalize();
+		bool normalize();
 
 		//template<typename _Tp> static inline
 		//	Point3_<_Tp> operator - (const Point3_<_Tp>& a, const Point3_<_Tp>& b);
@@ -73,17 +73,18 @@ namespace orth
 	}
 
 	template<typename _Tp> inline
-		void Point3_<_Tp>::normalize()
+		bool Point3_<_Tp>::normalize()
 	{
 		double length = sqrt(x*x + y*y + z*z);
 		if (length == 0)
 		{
 			std::cout << " zero value in normalization " << std::endl;
-			return;
+			return false;
 		}
 		x = (_Tp)(x / length);
 		y = (_Tp)(y / length);
 		z = (_Tp)(z / length);
+		return true;
 	}
 
 	template<typename _Tp> static inline
